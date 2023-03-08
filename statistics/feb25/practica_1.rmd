@@ -1,60 +1,177 @@
 ---
 title: "Practica 1"
-author: "Ian Nicolas Ramírez Mejía"
-output: html_document
+author: "Ian Nicolas Ramírez Mejía - Felipe Buitrago Carmona"
 date: "2023-02-25"
+output:
+  html_document:
+    df_print: paged
+  word_document: default
+  pdf_document: default
 ---
 
 ```{r include=FALSE}
 library(fdth)
 ```
 
-# Estudio en geriátricos
-### Method: fdth
+# 1) Estudio en geriátricos
 
-Se realiza un estudio comparativo de dos geriátricos del oeste de virginia. El
-objetivo del estudio es determinar el tipo de pacientes a los que se atiende y
-averiguar donde van los pacientes cuando dejan el geri[atrico. Est[an
-implicadas cuatro variables aleatorias discreatas: **Sexo** ($F=Female$ y $M=Male$
-según lineamientos del investigador), **Diagnóstico** ($RM=\text{Retrasado Mental}$,
-$EM=\text{Enfermo Mental}$, $FE=\text{Fisicamente Enfermo}$), **Edad** y
-**Destino** al dejar el geriátrico ($1=\text{Fallecido}$, $2=\text{Hogar
-Familiares}$, $3=\text{Hospital}$ $4=\text{Calle}$ $5=\text{Otro geriátrico}$
-$6=\text{Sanatorio articular}$ $7=\text{No dejó el geriátrico}$)
+Se realiza un estudio comparativo de dos geriátricos del oeste de virginia. El objetivo del estudio es determinar el
+tipo de pacientes a los que se atiende y averiguar donde van los pacientes cuando dejan el geri[atrico. Est[an
+implicadas cuatro variables aleatorias discreatas: **Sexo** ($F=Female$ y $M=Male$ según lineamientos del investigador),
+**Diagnóstico** ($RM=\text{Retrasado Mental}$, $EM=\text{Enfermo Mental}$, $FE=\text{Fisicamente Enfermo}$), **Edad** y
+**Destino** al dejar el geriátrico ($1=\text{Fallecido}$, $2=\text{Hogar Familiares}$, $3=\text{Hospital}$
+$4=\text{Calle}$ $5=\text{Otro geriátrico}$ $6=\text{Sanatorio articular}$ $7=\text{No dejó el geriátrico}$)
 
 ```{r}
-sex <- c("M", "M", "F", "M", "F", "F", "F", "F", "M", "M", "F", "M", "M", "F",
-         "F", "F", "M", "F", "F", "M", "F", "M", "F", "M", "M", "F", "F", "F",
-         "F", "M", "F", "F", "M", "M", "M", "F", "F", "F", "M", "F")
+sex <- c(
+    "M", "M", "F", "M", "F", "F", "F", "F", "M", "M", "F", "M", "M", "F",
+    "F", "F", "M", "F", "F", "M", "F", "M", "F", "M", "M", "F", "F", "F",
+    "F", "M", "F", "F", "M", "M", "M", "F", "F", "F", "M", "F"
+)
 
-sex_table <- fdt(sex, breaks = c("sturges"))
+diagnostic <- c(
+    "EM", "RM", "FE", "EM", "RM", "EM", "FE", "FE", "RM", "EM",
+    "FE", "FE", "EM", "RM", "RM", "FE", "RM", "FE", "RM", "FE",
+    "EM", "EM", "FE", "FE", "FE", "EM", "RM", "EM", "RM", "FE",
+    "FE", "RM", "FE", "RM", "FE", "EM", "EM", "EM", "RM", "RM"
+)
 
-sex_r <- max(sex) - min(sex)
+ages <- c(
+    29, 35, 34, 36, 25, 20, 31, 89, 42, 41, 47, 41, 87, 56, 50, 28, 35,
+    23, 39, 42, 72, 52, 31, 35, 42, 29, 61, 18, 64, 51, 30, 35, 40, 76,
+    59, 71, 62, 65, 51, 18
+)
 
-sex_m <- round(1 + 3.3 * log10(length(fuma)))
-
-sex_a <- sex_r / sex_m
-
-
-diagnostic <- c("EM", "RM", "FE", "EM", "RM", "EM", "FE", "FE", "RM", "EM",
-                "FE", "FE", "EM", "RM", "RM", "FE", "RM", "FE", "RM", "FE",
-                "EM", "EM", "FE", "FE", "FE", "EM", "RM", "EM", "RM", "FE",
-                "FE", "RM", "FE", "RM", "FE", "EM", "EM", "EM", "RM", "RM")
-
-ages <- c(29, 35, 34, 36, 25, 20, 31, 89, 42, 41, 47, 41, 87, 56, 50, 28, 35,
-          23, 39, 42, 72, 52, 31, 35, 42, 29, 61, 18, 64, 51, 30, 35, 40, 76,
-          59, 71, 62, 65, 51, 18)
-
-destine <- c(2, 7, 7, 7, 7, 7, 7, 1, 7, 7, 7, 2, 7, 1, 7, 7, 7, 7, 3, 7, 6, 7,
-             7, 7, 7, 2, 7, 3, 7, 7, 7, 7, 6, 3, 7, 6, 7, 3, 7, 7)
-
-data <- table(sex, diagnostic, ages, destine)
+destine <- c(
+    2, 7, 7, 7, 7, 7, 7, 1, 7, 7, 7, 2, 7, 1, 7, 7, 7, 7, 3, 7, 6, 7,
+    7, 7, 7, 2, 7, 3, 7, 7, 7, 7, 6, 3, 7, 6, 7, 3, 7, 7
+)
 ```
 
+## a) Tablas de frecuencia (variables cuantitativas) y tabla cruazada (variables cualitativas):
+```{r, echo=F}
+(ages_ft <- fdt(ages, breaks = c("Sturges")))
+(destine_ft <- fdt(destine, breatks = c("Sturges")))
+(quant_table <- table(sex, diagnostic))
+```
 
+## b) Histogramas
+```{r, echo=F, out.width='1\\linewidth', fig.asp=0.5}
+par(mfrow = c(1, 2))
+hist(x = ages, main = "Histograma de edades", xlab = "Edad", ylab = "Frecuencia")
+hist(x = destine, main = "Histograma de destino", xlab = "Destino", ylab = "Frecuencia")
+barplot(table(sex), main = "Histograma de Sexo", xlab = "Sexo", ylab = "Frecuencia")
+barplot(table(diagnostic), main = "Histograma de diagnostico", xlab = "diagnostico", ylab = "Frecuencia")
+```
 
+## c) Boxplots y pie charts (variables cuantitativas)
+```{r, fig.align = "center"}
+pie(table(destine), main = "Pie chart de destino")
+par(mfrow = c(1, 2))
+boxplot(ages, main = "Boxplot de edades")
+boxplot(destine, main = "Boxplot de destino")
+```
 
-# 2 binom
-# 3 binom
-# 4 poisson
-# 5 poisson
+## d) Pie charts (variables cualitativas)
+```{r, fig.align = "center"}
+par(mfrow = c(1, 2))
+pie(table(sex), main = "Pie chart de sexo")
+pie(table(diagnostic), main = "Pie chart de diagnóstico")
+```
+
+## e) Análisis
+Lorem ipsum lore
+
+## f) Estadísticos descriptivos
+
+### Edades
+```{r}
+summary(ages)
+var(ages)
+sd(ages)
+```
+
+### Destino
+```{r}
+summary(destine)
+var(destine)
+sd(destine)
+```
+
+# 2) Distribución binomial
+```{r}
+n <- 20
+p <- 0.9
+x <- 5
+dbinom(x, size = n, prob = p)
+
+x <- 0:20
+fx <- dbinom(x, 20, 0.9)
+fcx <- pbinom(x, 20, 0.9)
+(tabla <- data.frame(x, fx, fcx))
+plot(x, fx, type = "h")
+plot(x, fx, type = "l")
+```
+
+# 3) Distribución binomial
+## a)
+```{r}
+n <- 12
+p <- 0.7
+x <- 7:9
+dbinom(x, size = n, prob = p)
+```
+
+## b) como la probabilidad es cumulativa, usamos pbinom
+```{r}
+(1 - pbinom(6, n, p))
+```
+
+## c) como la probabilidad es cumulativa, usamos pbinom
+```{r}
+(pbinom(8, n, p))
+```
+
+## d)
+```{r}
+x <- 0:12
+fx <- dbinom(x, n, p)
+fcx <- pbinom(x, n, p)
+(tabla <- data.frame(x, fx, fcx))
+```
+
+## e)
+```{r, echo = F, fig.align = "center"}
+par(mfrow = c(1, 2))
+plot(x, fx, type = "h")
+plot(x, fcx, type = "l")
+```
+
+# 4) Poisson
+## a)
+```{r}
+x <- 6
+promedio <- 3.7
+fx <- dpois(x, promedio)
+```
+
+## b)
+```{r}
+x <- 0:1
+promedio <- 3.7
+fx <- dpois(x, promedio)
+fcx <- ppois(x, promedio)
+```
+
+## c)
+```{r}
+(1 - ppois(8, promedio))
+```
+
+# 5) Poisson
+```{r}
+n <- 8000
+p <- 0.001
+x <- 7
+dbinom(x, size = n, prob = p)
+```
