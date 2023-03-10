@@ -14,13 +14,12 @@ library(fdth)
 ```
 
 # 1) Estudio en geriátricos
-
 Se realiza un estudio comparativo de dos geriátricos del oeste de virginia. El objetivo del estudio es determinar el
 tipo de pacientes a los que se atiende y averiguar donde van los pacientes cuando dejan el geri[atrico. Est[an
 implicadas cuatro variables aleatorias discreatas: **Sexo** ($F=Female$ y $M=Male$ según lineamientos del investigador),
 **Diagnóstico** ($RM=\text{Retrasado Mental}$, $EM=\text{Enfermo Mental}$, $FE=\text{Fisicamente Enfermo}$), **Edad** y
 **Destino** al dejar el geriátrico ($1=\text{Fallecido}$, $2=\text{Hogar Familiares}$, $3=\text{Hospital}$
-$4=\text{Calle}$ $5=\text{Otro geriátrico}$ $6=\text{Sanatorio articular}$ $7=\text{No dejó el geriátrico}$)
+$4=\text{Calle}$ $5=\text{Otro geriátrico}$ $6=\text{Sanatorio particular}$ $7=\text{No dejó el geriátrico}$)
 
 ```{r}
 sex <- c(
@@ -80,7 +79,26 @@ pie(table(diagnostic), main = "Pie chart de diagnóstico")
 ```
 
 ## e) Análisis
-Lorem ipsum lore
+De los resultados obtenidos en el punto **a** podemos concluir que
+aproximadamente el $50\%$ de los pacientes que se frecuentan la clínica se
+encuentran entre los $28$ y los $48$ años, siendo más frecuentes los pacientes
+entre los $28$ y los $38$ años. También es posible concluir que el $78\%$ de los
+pacientes se encuentran internados en el geríatrico del estudio o en uno
+particular. \
+
+De los resultados obtenidos en el punto **b**, se puede concluir que los
+pacientes usados para el estudio son en su mayoría mujeres, de las cuales el
+$34\%$ tiene un padecimiento físico, y el restante uno mental.rAdemás, en
+hombres los padecimientos físicos constan de un total del $41\%$, y el restante
+son padecimientos mentales.\
+
+De los resultados obtenidos en el punto **c** se puede concluir que la media de
+edad de los pacientes que frecuentan la clínica tienen una media de edad de 40
+años y no hay datos atípicos presentes.\
+
+De los resultados obtenidos en el punto **d** se puede concluir que se tiene un
+grupo homogeneo de pacientes en términos de padecimientos, siendo levemente más
+frecuentes los padecimientos físicos (__FE__).
 
 ## f) Estadísticos descriptivos
 
