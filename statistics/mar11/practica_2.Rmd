@@ -1,0 +1,236 @@
+---
+title: "Practica 2"
+author: "Ian Nicolas Ramírez Mejía - Felipe Buitrago Carmona"
+date: "2023-03-11"
+output:
+  html_document:
+    df_print: paged
+  word_document: default
+  pdf_document: default
+---
+
+```{r include=FALSE}
+library(fdth)
+library(lmtest)
+library(ggplot2)
+```
+
+# 1) Estudio de Dactilografía
+En un estudio de dactilografía, una característica muy importante es el total de los surcos en los $10$ dedos de un individuo. Suponga que el total de surcos en los dedos de los individuos en determinada población tiene una distribución aproximadamente normal con una media de $\mu = 140$ y una desviación estándar $\sigma = 50$. Calcula la probabilidad de que un individuo, elegido al azar entre esa población tenga un total de surcos en los dedos
+
+## a) 200 o más surcos
+```{r}
+(p_above_200 <- 1 - pnorm(200, 140, 50))
+```
+
+## b) Menos de 100
+```{r}
+(p_below_100 <- pnorm(100, 140, 50))
+```
+
+## c) Entre 100 y 200
+```{r}
+(p_between_100_200 <- pnorm(200, 140, 50) - p_below_100)
+```
+
+## d) Entre 200 y 250
+```{r}
+(p_between_200_250 <- pnorm(250, 140, 50) - pnorm(200, 140, 50))
+```
+
+## e) En una población de $10000$ personas, ¿cuántos puede esperarse que tengan un total de $200$ surcos o más?
+```{r}
+(p_10k_above_200 <- p_above_200 * 10000)
+```
+
+# 2) Estudio en **Chemosphere**
+Un estudio publicado en *Chemosphere* reporta que los niveles de la dioxina TCDD en $20$ veteranos de Vietnam de Massachusetts, quienes posiblemente estuvieron expuestos al agente naranja. En la tabla de datos se presentan los niveles de TCDD en plasma y tejido adiposo. Calcule un intervalo de confianza del $95\%$ para $\mu_1 - \mu_2$, donde $\mu_1, \mu_2$ representan las medias verdades de los niveles de TCDD en plasma y en tejido adiposo, respectivamente. Suponga que la distribuci[on de las diferencias es casi normal.
+
+```{r}
+tcdd_levels_plasma <- c(
+    2.5, 3.1, 2.1, 3.5, 3.1, 1.8, 6.0, 3.0, 36.0, 4.7, 6.9,
+    3.3, 4.6, 1.6, 7.2, 1.8, 20.0, 2.0, 2.5, 4.1
+)
+
+tcdd_levels_tissue <- c(
+    4.9, 5.9, 4.4, 6.9, 7.0, 4.2, 10.0, 5.5, 41.0, 4.4,
+    7.0, 2.9, 4.6, 1.4, 7.7, 1.1, 11.0, 2.5, 2.3, 2.5
+)
+
+(distribution <- t.test(tcdd_levels_plasma, tcdd_levels_tissue))
+```
+
+El intervalo de confianza obtenido es de $[-6.182749:4.442749]$. Que como podemos observar, cruza $0$, lo que garantiza que las medias tienen diferencias poco significativas, dejándonos así con $\mu_1 = 5.99$ y $\mu_2 = 4.44$ como medias verdades de los niveles de TCDD.
+
+# 3) Inversión publicitaria en industria
+
+Los datos mencionados a continuación, registran las ventas en millones de euros y los gastos incurridos en publicidad de una empresa industrial que fabrica sillas de oficina. Hacer un modelo de regresión completo junto a otros modelos y comparar cuál es el mejor ajuste.
+
+```{r}
+publicity_expences <- c(
+    14.2226, 13.9336, 15.5040, 16.3105, 17.4936, 19.8906,
+    21.4803, 20.4046, 21.4776, 22.6821, 20.9722, 23.3538,
+    26.1040, 29.1101, 27.2418, 23.0096, 27.6116, 32.1111,
+    36.1788, 37.5671, 33.5069, 36.6088, 31.1554, 32.7752,
+    41.1886, 39.9715, 39.6866, 40.2991, 40.9538, 41.9323,
+    39.8393
+)
+
+sales_vol <- c(
+    95.065, 97.281, 103.159, 107.607, 113.860, 121.153, 129.102,
+    132.340, 138.663, 142.856, 143.120, 147.928, 155.955, 164.946,
+    163.921, 163.426, 172.485, 180.519, 190.509, 196.497, 196.024,
+    200.832, 196.769, 205.341, 220.230, 228.703, 236.500, 244.560,
+    254.771, 263.683, 268.304
+)
+
+sales_data <- data.frame(publicity = publicity_expences, sales = sales_vol)
+model <- lm(sales ~ publicity, data = sales_data)
+summary(model)
+
+plot(publicity_expences, sales_vol)
+
+error <- model$residuals
+
+par(mfrow = c(1, 2))
+qqnorm(error)
+qqline(error)
+hist(error)
+```
+## Test de normalidad de Errores
+```{r}
+shapiro.test(error)
+```
+Con un $P_{value} > \alpha$ aceptamos la hipótesis nula. Lo que implica que los errores se encuentran distribuidos normalmente.
+
+## Test de igualdad de Varianzas
+```{r}
+bptest(model, studentize = FALSE)
+```
+Con un $P_{value} < \alpha$ aceptamos la hipótesis alterna. Lo que implica que hay un desigualdad en las varianzas.
+
+## Test de independencia de errores
+```{r}
+dwtest(model, alternative = "two.sided")
+```
+Con un $P_{value} < \alpha$ aceptamos la hipótesis alterna. Lo que implica que hay un correlación entre los errores.
+
+## Ajuste de modelo
+Basándonos en el comportamiento gráfico del modelo, se toma la decisión de implementar el modelo como una regresión lineal múltiple de tercer grado.
+
+```{r}
+(ggplot(sales_data, aes(x = publicity, y = sales_vol))
++
+    geom_point()
+    +
+    geom_smooth(method = "lm", formula = y ~ x + I(x^2) + I(x^3))
+)
+
+model_adjusted <- lm(sales ~ publicity + I(publicity^2) + I(publicity^3),
+    data = sales_data
+)
+
+par(mfrow = c(2, 2))
+plot(model_adjusted)
+```
+
+### Analisis de Anova
+```{r}
+anova(model, model_adjusted)
+```
+El modelo polinómico tiene un $P_{value}$ que representa de mejor modo el sistema.
+
+### Ajuste del modelo
+```{r}
+summary(model_adjusted)
+
+error_adjusted <- model_adjusted$residuals
+
+par(mfrow = c(1, 2))
+qqnorm(error_adjusted)
+qqline(error_adjusted)
+hist(error_adjusted)
+```
+
+### Tests
+```{r}
+shapiro.test(error_adjusted)
+bptest(model_adjusted, studentize = FALSE)
+dwtest(model_adjusted, alternative = "two.sided")
+```
+En términos de los indicadores de los tests, no se nota una mejoría significamente entre los modelos, sin embargo, a través de observación se puede notar una mejora significativa en el ajuste del **qqnorm**, y en los plots que acoplan la data a una curva.
+
+# 4) Medidas de supervivencia de espermatozoides
+Se midió el porcentaje de supervivencia de los espermatozoides de cierto tipo de semen animal, después de almacenarlos con distintas combinaciones de concentraciones de tres materiales que se emplean para incrementar la supervivencia.
+
+```{r}
+y <- c(
+    25.5, 31.2, 25.9, 38.4, 18.4, 26.7, 26.4, 25.9, 32.0, 25.2, 39.7, 35.7,
+    26.5
+)
+
+x1 <- c(
+    1.74, 6.32, 6.22, 10.52, 1.19, 1.22, 4.10, 6.32, 4.08, 4.15, 10.15,
+    1.72, 1.70
+)
+x2 <- c(
+    5.30, 5.42, 8.41, 4.63, 11.60, 5.85, 6.62, 8.72, 4.42, 7.60, 4.83,
+    3.12, 5.3
+)
+x3 <- c(
+    10.80, 9.4, 7.20, 8.50, 9.40, 9.90, 8.00, 9.10, 8.70, 9.20, 9.40, 7.60,
+    8.20
+)
+```
+
+## Modelo lineal
+
+```{r}
+datos <- data.frame(y, x1, x2, x3)
+plot(datos)
+modelo <- lm(y ~ x1 + x2 + x3)
+summary(modelo)
+
+error <- modelo$residuals
+par(mfrow = c(1, 2))
+qqnorm(error)
+qqline(error)
+hist(error)
+```
+
+## Pruebas de hipótesis
+```{r}
+shapiro.test(error)
+bptest(modelo, studentize = FALSE)
+dwtest(modelo, alternative = "two.sided")
+par(mfrow = c(1, 1))
+plot(modelo$residuals, modelo$fitted.values)
+```
+Podemos notar que el test de Shapiro y la igualdad de varianzas son aceptan la hipótesis nula, sin embargo el test de independencia de errores tiene una fuerte dependencia, por lo cual se acepta la hipótesis alterna.
+
+## Mejora de modelo
+Basándonos en los aportes que realiza cada uno de los coeficientes, podemos eliminar la variable $x_3$, efectivamente eliminando un grado de libertad en el sistema.
+
+| Variables | $R^2$ |
+| --- | --- |
+| $x_1 + x_2 + x_3$ | $0.8823$ |
+| $x_1 + x_2$ | $0.8904$ |
+| $x_2$ | $0.001451$ |
+
+Se procede a entrenar el modelo únicamente con $x_1$ y $x_2$.
+```{r}
+modelo_mejorado <- lm(y ~ x1 + x2)
+summary(modelo_mejorado)
+error_mejorado <- modelo_mejorado$residuals
+par(mfrow = c(1, 2))
+qqnorm(error_mejorado)
+qqline(error_mejorado)
+hist(error_mejorado)
+
+shapiro.test(error)
+bptest(modelo_mejorado, studentize = FALSE)
+dwtest(modelo_mejorado, alternative = "two.sided")
+par(mfrow = c(1, 1))
+plot(modelo_mejorado$residuals, modelo_mejorado$fitted.values)
+```
+Las pruebas de hipótesis se comportan de igual modo que en el modelo anterior, sin embargo, se halla un mejor ajuste de $R^2$, pero también se puede observar que al no haber independencia en los errores, se puede introducir inconsistencias en el predictor para nuevos datos.
