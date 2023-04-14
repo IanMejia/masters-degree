@@ -1,0 +1,87 @@
+---
+title: "Practica 2"
+author: "Ian Nicolas Ramírez Mejía"
+date: "2023-03-25"
+output:
+  html_document:
+    df_print: paged
+  word_document: default
+  pdf_document: default
+---
+
+```{r include=FALSE}
+library(tidyverse)
+library(markovchain)
+library(psych)
+library(ISLR)
+library(MASS)
+```
+
+# 3) Gases contaminantes
+```{r}
+
+x_1 <- c(8, 7, 7, 10, 6, 8, 9, 5, 7, 8)
+x_2 <- c(98, 107, 103, 88, 91, 90, 84, 72, 82, 64)
+x_3 <- c(7, 4, 4, 5, 4, 5, 7, 6, 5, 5)
+x_4 <- c(2, 3, 3, 2, 2, 2, 4, 4, 1, 2)
+x_5 <- c(12, 9, 5, 8, 8, 12, 12, 21, 11, 13)
+x_6 <- c(8, 5, 6, 15, 10, 12, 15, 14, 11, 9)
+x_7 <- c(2, 3, 3, 4, 3, 4, 5, 4, 3, 4)
+
+df <- data.frame(x_1, x_2, x_3, x_4, x_5, x_6, x_7)
+
+mu <- colMeans(df)
+
+sigma <- cov(df)
+
+inverse <- solve(sigma)
+
+r <- cor(df)
+
+df$distance <- sqrt(mahalanobis(df, mu, sigma))
+df$p <- pchisq(df$distance, df = 3, lower.tail = FALSE)
+(df)
+```
+
+
+# 4) Estado de nutricion en estudiantes
+```{r}
+well_fed <- c(rep(1, 105), rep(0, 80), rep(1, 15), rep(0, 300))
+
+poorly_fed <- c(rep(1, 105), rep(1, 80), rep(0, 15), rep(0, 300))
+
+relation_data <- data.frame(well_fed, poorly_fed)
+
+(table(relation_data))
+
+model <- glm(well_fed ~ poorly_fed, family = "binomial")
+
+par(mfrow = c(2, 2))
+plot(model)
+```
+
+
+# 5) Operadores Móviles
+
+### a) Probabilidad de permanencia en primera y segunda corrida
+```{r}
+p <- matrix(c(.6, .2, .2, .3, .5, .2, .3, .3, .4), nrow = 3, byrow = TRUE)
+
+(mc <- new("markovchain",
+    transitionMatrix = p, states = c("tigo", "claro", "movistar"),
+    name = "Chain 1"
+))
+
+summary(mc)
+
+x_0 <- c(.4, .25, .35)
+
+(x_1 <- x_0 * (mc))
+(x_2 <- x_0 * (mc)^2)
+```
+
+### b) Grafico
+```{r}
+plot(mc)
+```
+
